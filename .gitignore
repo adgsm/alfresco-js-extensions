@@ -11,3 +11,4 @@ mvnbuild.cmd
 /bin/
 release.properties
 **/.DS_Store
+*/run.*
