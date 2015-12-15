@@ -136,6 +136,79 @@ public class JSZip extends Callback {
 	}
 	
 	@SuppressWarnings("unused")
+	public NodeRef toNode( String sParentNodeRef , String sNodeRef ) throws Exception {
+		NodeRef zipNodeRef = null; 
+		String nodeName;
+		final NodeRef nodeRef = new NodeRef( sNodeRef );
+		if( nodeRef == null ) {
+			logger.error( "Node not found for provided node ref \"" + sNodeRef + "\"." );
+			return null;
+		}
+		nodeName = (String) nodeService.getProperty( nodeRef , ContentModel.PROP_NAME ) + ".zip";
+		zipNodeRef = toNode( sParentNodeRef , nodeName , sNodeRef , true );
+		return zipNodeRef;
+	}
+	
+	public NodeRef toNode( String sParentNodeRef , String nodeName , String sNodeRef ) throws Exception {
+		return toNode( sParentNodeRef , nodeName , sNodeRef , true );
+	}
+	
+	@SuppressWarnings("unused")
+	public NodeRef toNode( String sParentNodeRef , String nodeName , String sNodeRef , boolean includeFolders ) throws Exception {
+		NodeRef zipNodeRef = null; 
+		ArrayList<String> nodeRefs = new ArrayList<String>();
+		String startPoint = null;
+		final NodeRef nodeRef = new NodeRef( sNodeRef );
+		if( nodeRef == null ) {
+			logger.error( "Node not found for provided node ref \"" + sNodeRef + "\"." );
+			return null;
+		}
+		try{
+			startPoint = nodeService.getPath( nodeRef ).toDisplayPath( nodeService , permissionService ) + "/";
+			nodeRefs = getNodeRefs( nodeRefs , nodeRef , includeFolders );
+			zipNodeRef = toNode( sParentNodeRef , nodeName , nodeRefs.toArray( new String[ nodeRefs.size() ] ) , startPoint );
+		}
+		catch( Exception e ){
+			logger.error( e );
+			e.printStackTrace();
+		}
+		return zipNodeRef;
+	}
+
+	@SuppressWarnings("unused")
+	public NodeRef toNode( String sParentNodeRef , String nodeName , String[] nodeRefs , String startPoint ) throws Exception {
+		NodeRef zipNodeRef = null;
+		final NodeRef parentNodeRef = new NodeRef( sParentNodeRef );
+		if( parentNodeRef == null ) {
+			logger.error( "Parent node not found for provided node ref \"" + sParentNodeRef + "\"." );
+			return null;
+		}
+		if( nodeName.equals( "" ) || nodeName.matches( FILE_NAME_REGEX ) ) {
+			logger.error( "Invalid node name provided (empty or containing special characters)." );
+			return null;
+		}
+		if( alfContent.isContainer( parentNodeRef ) == false ) {
+			logger.error( "Provide parent node \"" + nodeService.getProperty( parentNodeRef , ContentModel.PROP_NAME ) + "\" is not a folder." );
+			return null;
+		}
+		if( nodeRefs.length == 0 ) {
+			logger.error( "Empty set provided to be zipped." );
+			return null;
+		}
+
+		sNodeName = nodeName;
+		try{
+		    // run in same thread
+		    zipNodeRef = doInBackground( parentNodeRef , nodeName , nodeRefs , startPoint );
+		}
+		catch( Exception e ){
+			logger.error( e );
+			e.printStackTrace();
+		}
+		return zipNodeRef;
+    }
+	
+	@SuppressWarnings("unused")
 	public void toNode( String sParentNodeRef , String sNodeRef , Function funct ) throws Exception {
 		String nodeName;
 		final NodeRef nodeRef = new NodeRef( sNodeRef );

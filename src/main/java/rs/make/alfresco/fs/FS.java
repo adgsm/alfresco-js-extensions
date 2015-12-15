@@ -46,10 +46,19 @@ public class FS extends Callback {
     
     private ThreadGroup bgtg = new ThreadGroup( "fsback" );
     
+    private static final String DEFAULT_ENCODING = "UTF-8";
     private String sPath;
 
+    public NodeRef importFromFS( String path , String sParentNodeRef , String mimetype ){
+		return importFromFS( path , sParentNodeRef , DEFAULT_ENCODING , mimetype , null , null );
+	}
+
+	public NodeRef importFromFS( String path , String sParentNodeRef , String encoding , String mimetype ){
+		return importFromFS( path , sParentNodeRef , encoding , mimetype , null , null );
+	}
+	
 	@SuppressWarnings("unused")
-	public NodeRef importFromFS( String path , String sParentNodeRef , String encoding , String mimetype , String model , String stype , Function funct ){
+	public NodeRef importFromFS( String path , String sParentNodeRef , String encoding , String mimetype , String model , String stype ){
 		if( path == null || path.equals( "" ) ) {
 			logger.error( "Non-valid zip file path provided: " + path );
 			return null;
@@ -58,8 +67,6 @@ public class FS extends Callback {
 			logger.error( "Non-valid parent node ref provided: " + sParentNodeRef );
 			return null;
 		}
-
-		Callback.SharedScope.set( getScope() );
 		
 		sPath = path;
 		NodeRef fsNodeRef = null;
@@ -68,6 +75,50 @@ public class FS extends Callback {
 			if( parentNodeRef == null ) {
 				logger.error( "Not found parent node for provided nodeRef: " + sParentNodeRef );
 				return null;
+			}
+
+			File file = new File( path );
+
+		    String nodeName = file.getName();
+			InputStream content = new FileInputStream( path );
+
+			// run in same thread
+		    fsNodeRef = doInBackground( parentNodeRef , nodeName , content , encoding , mimetype , model , stype );
+		}
+		catch( Exception e ){
+			logger.error( e );
+			e.printStackTrace();
+		}
+		return fsNodeRef;
+	}
+
+	public void importFromFS( String path , String sParentNodeRef , String mimetype , Function funct ){
+		importFromFS( path , sParentNodeRef , DEFAULT_ENCODING , mimetype , null , null , funct );
+	}
+
+	public void importFromFS( String path , String sParentNodeRef , String encoding , String mimetype , Function funct ){
+		importFromFS( path , sParentNodeRef , encoding , mimetype , null , null , funct );
+	}
+	
+	@SuppressWarnings("unused")
+	public void importFromFS( String path , String sParentNodeRef , String encoding , String mimetype , String model , String stype , Function funct ){
+		if( path == null || path.equals( "" ) ) {
+			logger.error( "Non-valid zip file path provided: " + path );
+			return;
+		}
+		if( sParentNodeRef == null || sParentNodeRef.equals( "" ) ) {
+			logger.error( "Non-valid parent node ref provided: " + sParentNodeRef );
+			return;
+		}
+
+		Callback.SharedScope.set( getScope() );
+		
+		sPath = path;
+		try{
+			NodeRef parentNodeRef = new NodeRef( sParentNodeRef );
+			if( parentNodeRef == null ) {
+				logger.error( "Not found parent node for provided nodeRef: " + sParentNodeRef );
+				return;
 			}
 
 			File file = new File( path );
@@ -89,7 +140,6 @@ public class FS extends Callback {
 			logger.error( e );
 			e.printStackTrace();
 		}
-		return fsNodeRef;
 	}
 
 	class DoInBackground implements Runnable {

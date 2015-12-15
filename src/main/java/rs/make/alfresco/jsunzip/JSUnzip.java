@@ -75,6 +75,7 @@ public class JSUnzip extends Callback {
     private ThreadGroup bgtg = new ThreadGroup( "alfuzipback" );
     private ThreadGroup btg = new ThreadGroup( bgtg , "alfuzipbatch" );
     private ThreadGroup tg = new ThreadGroup( btg , "alfuzip" );
+    Thread bgt;
     private final int ENTRIES_BATCH_SIZE = 50;
     private final int BUFFER_SIZE = 32*1024;
 
@@ -83,6 +84,37 @@ public class JSUnzip extends Callback {
 	private boolean hasMoreEntries = false;
 	
 	public ArrayList<String> createdNodes = new ArrayList<String>();
+
+	public String[] fromNode( String sNodeRef , String sParentNodeRef ) throws Exception {
+		String[] nodes = null;
+		nodeRef = new NodeRef( sNodeRef );
+		parentNodeRef = new NodeRef( sParentNodeRef );
+
+		try{
+			if( nodeRef == null ) {
+				throw new Exception( "Invalid zip node ref provided " + sNodeRef );
+			}
+			if( parentNodeRef == null ) {
+				throw new Exception( "Invalid destination node ref provided " + sParentNodeRef );
+			}
+
+			ContentReader contentReader = serviceRegistry.getContentService().getReader( nodeRef , ContentModel.PROP_CONTENT );
+	        String mimetype = contentReader.getMimetype();
+	        if( mimetype.equalsIgnoreCase( MIME_ZIP ) == false ){
+				throw new Exception( "Invalid mimetype of source node: \"" + mimetype + "\". It should be \"" + MIME_ZIP + "\"." );
+	        }
+			
+			// initialize
+	        createdNodes.clear();
+			logger.info( "Unzip processing started." );
+	        nodes = init( contentReader );
+		}
+		catch( Exception e ){
+			logger.error( e );
+			e.printStackTrace();
+		}
+		return nodes;
+    }
 	
 	public void fromNode( String sNodeRef , String sParentNodeRef , Function funct ) throws Exception {
 		nodeRef = new NodeRef( sNodeRef );
@@ -120,10 +152,19 @@ public class JSUnzip extends Callback {
 		}
     }
 
+	private String[] init( ContentReader contentReader ) throws Exception{
+		init( contentReader , null );
+		bgt.join();
+		logger.info( "Unzip processing concluded." );
+		String[] nodes = new String[ createdNodes.size() ];
+		createdNodes.toArray( nodes );
+		return nodes;
+	}
+
 	private void init( ContentReader contentReader , Function funct ) throws Exception{
-	    // do it in a background thread
+	    // do in a background thread
 	    DoInBackground doInBackground = new DoInBackground( contentReader , funct , this );
-		Thread bgt = new Thread( bgtg , doInBackground );
+		bgt = new Thread( bgtg , doInBackground );
 		bgt.start();
 	}
 
@@ -173,7 +214,6 @@ public class JSUnzip extends Callback {
 			processBatches( doDoInBatches.zis , funct );
 		}
 		else{
-			logger.info( "Unzip processing concluded." );
 			// run callback
 	   		RetryingTransactionCallback<Object> txexcallback = new RetryingTransactionCallback<Object>() {
 	   			@Override
@@ -185,6 +225,7 @@ public class JSUnzip extends Callback {
 					args[0] = nodes;
 					Callback.AuthenticatedUser.set( authenticatedUser );
 					callback.run( funct , args );
+					logger.info( "Unzip processing concluded." );
 					return null;
 	   			}
 	    	};
