@@ -1,0 +1,115 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+<!--
+	Licensed to the Apache Software Foundation (ASF) under one or more
+	contributor license agreements.  See the NOTICE file distributed with
+	this work for additional information regarding copyright ownership.
+	The ASF licenses this file to You under the Apache License, Version 2.0
+	(the "License"); you may not use this file except in compliance with
+	the License.  You may obtain a copy of the License at
+		
+	http://www.apache.org/licenses/LICENSE-2.0
+		
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+-->
+<beans>
+	<!-- A Request class -->
+	<bean id="Request" parent="baseJavaScriptExtension" class="rs.make.alfresco.request.Request">
+		<property name="extensionName">
+			<value>jsRequest</value>
+		</property>
+		<property name="nodeService" ref="NodeService" />
+		<property name="contentService" ref="ContentService" />
+		<property name="alfContent" ref="AlfContent" />
+	</bean>
+
+	<!-- A JSBase64 class -->
+	<bean id="JSBase64" parent="baseJavaScriptExtension" class="rs.make.alfresco.jsbase64.JSBase64">
+		<property name="extensionName">
+			<value>jsBase64</value>
+		</property>
+		<property name="contentService" ref="ContentService" />
+	</bean>
+
+	<!-- A JSZip class -->
+	<bean id="JSZip" parent="baseJavaScriptExtension" class="rs.make.alfresco.jszip.JSZip">
+		<property name="extensionName">
+			<value>jsZip</value>
+		</property>
+		<property name="nodeService" ref="NodeService" />
+		<property name="contentService" ref="ContentService" />
+		<property name="permissionService" ref="PermissionService" />
+		<property name="fileFolderService" ref="FileFolderService" />
+		<property name="transactionService" ref="TransactionService" />
+		<property name="alfContent" ref="AlfContent" />
+		<property name="callback" ref="Callback" />
+	</bean>
+
+	<!-- A JSUnzip class -->
+	<bean id="JSUnzip" parent="baseJavaScriptExtension" class="rs.make.alfresco.jsunzip.JSUnzip">
+		<property name="extensionName">
+			<value>jsUnzip</value>
+		</property>
+		<property name="nodeService" ref="NodeService" />
+		<property name="contentService" ref="ContentService" />
+		<property name="transactionService" ref="TransactionService" />
+		<property name="siteService" ref="SiteService" />
+		<property name="dictionaryService" ref="DictionaryService" />
+		<property name="alfContent" ref="AlfContent" />
+		<property name="searchService" ref="SearchService" />
+		<property name="serviceRegistry" ref="ServiceRegistry" />
+		<property name="callback" ref="Callback" />
+	</bean>
+
+	<!-- A Category class -->
+	<bean id="Category" parent="baseJavaScriptExtension" class="rs.make.alfresco.category.Category">
+		<property name="extensionName">
+			<value>jsCategory</value>
+		</property>
+		<property name="nodeService" ref="NodeService" />
+		<property name="categoryService" ref="CategoryService" />
+		<property name="contentService" ref="ContentService" />
+		<property name="alfContent" ref="AlfContent" />
+	</bean>
+
+	<!-- A FS class -->
+	<bean id="FS" parent="baseJavaScriptExtension" class="rs.make.alfresco.fs.FS">
+		<property name="extensionName">
+			<value>jsFS</value>
+		</property>
+		<property name="transactionService" ref="TransactionService" />
+		<property name="alfContent" ref="AlfContent" />
+		<property name="callback" ref="Callback" />
+	</bean>
+
+	<!-- A AlfContent class -->
+	<bean id="AlfContent" parent="baseJavaScriptExtension" class="rs.make.alfresco.alfcontent.AlfContent">
+		<property name="extensionName">
+			<value>jsAlfContent</value>
+		</property>
+		<property name="nodeService" ref="NodeService" />
+		<property name="contentService" ref="ContentService" />
+		<property name="versionService" ref="VersionService" />
+		<property name="dictionaryService" ref="DictionaryService" />
+		<property name="transactionService" ref="TransactionService" />
+		<property name="authenticationService" ref="AuthenticationService" />
+		<property name="authorityService" ref="AuthorityService" />
+		<property name="personService" ref="PersonService" />
+		<property name="siteService" ref="SiteService" />
+		<property name="request" ref="Request" />
+	</bean>
+
+	<!-- A GlobalProperties class -->
+	<bean id="GlobalProperties"  class="rs.make.alfresco.globalproperties.GlobalProperties" />
+
+	<!-- A Callback class -->
+	<bean id="Callback" parent="baseJavaScriptExtension" class="rs.make.alfresco.callback.Callback">
+		<property name="extensionName">
+			<value>jsCallback</value>
+		</property>
+	</bean>
+</beans>
